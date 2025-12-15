@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Northampton Tennis - Book a Lesson</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .tennis-ball-spinner {
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      font-size: 3rem;
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
+  <div class="min-h-screen bg-gray-100">
+    <!-- Header -->
+    <header class="bg-blue-900 text-white py-8 shadow-lg">
+      <div class="max-w-5xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between">
+        <div>
+          <h1 class="text-4xl font-bold mb-2">Northampton Tennis</h1>
+          <p class="text-lg text-blue-200">7 Newly Resurfaced Indoor Courts</p>
+        </div>
+        <div class="mt-4 md:mt-0">
+          <span class="bg-green-600 px-4 py-2 rounded-full font-semibold text-white">Book Your Court Today!</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Coach List -->
+    <section class="max-w-5xl mx-auto px-4 py-8">
+      <h2 class="text-2xl font-bold mb-4 text-blue-900">Meet Our Coaches</h2>
+      <ul class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <li class="bg-white rounded-lg shadow p-4">Coach 1</li>
+        <li class="bg-white rounded-lg shadow p-4">Coach 2</li>
+        <li class="bg-white rounded-lg shadow p-4">Coach 3</li>
+        <li class="bg-white rounded-lg shadow p-4">Coach 4</li>
+        <li class="bg-white rounded-lg shadow p-4">Coach 5</li>
+        <li class="bg-white rounded-lg shadow p-4">Coach 6</li>
+        <li class="bg-white rounded-lg shadow p-4">Coach 7</li>
+      </ul>
+    </section>
+
+    <!-- Courts and Booking System -->
+    <section class="max-w-5xl mx-auto px-4 py-8">
+      <h2 class="text-2xl font-bold mb-6 text-blue-900">Book a Court</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Render 7 courts -->
+        <template id="court-template">
+          <div class="bg-white rounded-lg shadow p-6 mb-4">
+            <h3 class="text-xl font-bold mb-2">Court #<span class="court-number"></span></h3>
+            <form class="court-booking-form space-y-3">
+              <input type="hidden" name="court" value="">
+              <div>
+                <label class="block text-sm font-semibold mb-1">Name</label>
+                <input type="text" name="name" required class="w-full border rounded p-2">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold mb-1">Email</label>
+                <input type="email" name="email" required class="w-full border rounded p-2">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold mb-1">Date</label>
+                <input type="date" name="date" required class="w-full border rounded p-2">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold mb-1">Time</label>
+                <input type="time" name="time" required class="w-full border rounded p-2">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold mb-1">Duration (minutes)</label>
+                <input type="number" name="duration" min="30" max="180" step="30" value="60" required class="w-full border rounded p-2">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold mb-1">Coach (optional)</label>
+                <select name="coach" class="w-full border rounded p-2">
+                  <option value="">No Preference</option>
+                  <option>Coach 1</option>
+                  <option>Coach 2</option>
+                  <option>Coach 3</option>
+                  <option>Coach 4</option>
+                  <option>Coach 5</option>
+                  <option>Coach 6</option>
+                  <option>Coach 7</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold mb-1">Booking/Processing Fee</label>
+                <input type="text" name="fee" value="$5.00" readonly class="w-full border rounded p-2 bg-gray-100">
+              </div>
+              <button type="submit" class="bg-blue-700 text-white px-4 py-2 rounded font-semibold hover:bg-blue-900">Book Now</button>
+              <div class="form-message text-sm mt-2"></div>
+            </form>
+          </div>
+        </template>
+        <div id="courts-list" class="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+      </div>
+    </section>
+
+    <!-- Cancellation Policy -->
+    <section class="max-w-5xl mx-auto px-4 py-8">
+      <h2 class="text-2xl font-bold mb-4 text-blue-900">Cancellation Policy</h2>
+      <div class="bg-white rounded-lg shadow p-6">
+        <ul class="list-disc ml-6 text-gray-700 space-y-2">
+          <li>Cancellations made more than 24 hours in advance: No fee.</li>
+          <li>Cancellations within 24 hours: $15 fee applies.</li>
+          <li>No-shows: Full booking fee is non-refundable.</li>
+          <li>Contact us to cancel or reschedule. (Contact info coming soon)</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-blue-900 text-white py-6 mt-12">
+      <div class="max-w-5xl mx-auto px-4 text-center">
+        &copy; 2025 Northampton Tennis. All rights reserved.
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Render 7 courts dynamically
+    document.addEventListener('DOMContentLoaded', function() {
+      const courtsList = document.getElementById('courts-list');
+      const template = document.getElementById('court-template');
+      for (let i = 1; i <= 7; i++) {
+        const node = template.content.cloneNode(true);
+        node.querySelector('.court-number').textContent = i;
+        node.querySelector('input[name="court"]').value = i;
+        node.querySelector('.court-booking-form').addEventListener('submit', function(e) {
+          e.preventDefault();
+          const form = e.target;
+          const data = Object.fromEntries(new FormData(form));
+          // Calculate booking fee (fixed $5 for now)
+          const fee = 5.00;
+          // Send confirmation to client and facility (placeholder email)
+          // TODO: Integrate with EmailJS or backend
+          form.querySelector('.form-message').textContent = 'Booking submitted! Confirmation will be sent to you and Northampton.';
+          form.reset();
+        });
+        courtsList.appendChild(node);
+      }
+    });
+  </script>
+</body>
+</html>
